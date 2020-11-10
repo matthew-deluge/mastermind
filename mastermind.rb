@@ -11,7 +11,7 @@ class Mastermind
     @player_input = []
     @turn = 0
     @colors = ["r","b","y","g"]
-    #intro
+    intro
     make_board
   end
 
@@ -70,23 +70,67 @@ class Mastermind
   end
 
   def play
-    turns = 0
-    intro
-    until turns == 12 || check_win
+    turns = 12
+    until turns == 0 || check_win
       puts "there are #{turns} turns left."
       get_input
       create_result
-      binding.pry
       puts @result_board
       new_turn
-      turns += 1
+      turns -= 1
     end
     result = check_win ? "You won! congrats!" : "You lost, poor you!"
     puts result
   end
 end
 
+class Computermind < Mastermind
+  
+  def make_board
+    puts "What is your secret code? Remember your code can include b, g, r, y, and must be four letters long!"
+    @game_board = gets.chomp.split("")
+    until @game_board.length == 4 && (@game_board - @colors == [])
+      binding.pry
+      puts "Your code must be four letter long, and made up of r, b, y, and g.\n Try again!"
+      @game_board = gets.chomp.split("")
+    end
+  end
 
-game = Mastermind.new
-game.play
+  def computer_guess
+    for a in 1..4 do
+      @player_input.push(@colors.sample)
+    end
+  end
+
+  def play
+    turns = 12
+      until turns == 0 || check_win
+        puts "there are #{turns} turns left."
+        computer_guess
+        puts "The computer guessed #{@player_input}, and your code is #{@game_board}"
+        create_result
+        puts "The computer sees: #{@result_board}"
+        sleep 0.2
+        new_turn
+        turns -= 1
+      end
+      result = check_win ? "The computer won! The apocalypse is here!!" : "The computer lost! The singularity is avoided!"
+      puts result
+  end
+end
+
+puts "Welcome to Mastermind! You have two options:\nTo break the code, input '1'\nTo make the code, input'2'"
+input = gets.chomp
+until input == "1"||input == "2"
+  puts "You have two options:\nTo break the code, input '1'\nTo make the code, input'2'"
+  input = gets.chomp
+end
+case input
+when "1"
+  game = Mastermind.new
+  game.play
+when "2"
+  game = Computermind.new
+  game.play
+end
 
