@@ -39,10 +39,10 @@ class Mastermind
     puts "you guessed #{@player_input}"
   end
 
-  def create_result
+  def create_result(input_guess)
     @result_board = []
     temp_board = @game_board.clone
-    temp_input = @player_input.clone
+    temp_input = input_guess.clone
     temp_input.each_with_index do |choice, index|
       if choice == temp_board[index]
         @result_board.push("b")
@@ -70,14 +70,13 @@ class Mastermind
   end
 
   def play
-    turns = 12
-    until turns == 0 || check_win
-      puts "there are #{turns} turns left."
+    until @turn == 12 || check_win
+      puts "there are #{@turn} turns left."
       get_input
-      create_result
+      create_result (@player_input)
       puts @result_board
       new_turn
-      turns -= 1
+      @turn += 1
     end
     result = check_win ? "You won! congrats!" : "You lost, poor you!"
     puts result
@@ -86,6 +85,11 @@ end
 
 class Computermind < Mastermind
   
+  def initialize
+    super
+    @solutions = @colors.repeated_permutation(4).to_a
+  end
+
   def make_board
     puts "What is your secret code? Remember your code can include b, g, r, y, and must be four letters long!"
     @game_board = gets.chomp.split("")
@@ -97,26 +101,31 @@ class Computermind < Mastermind
   end
 
   def computer_guess
-    for a in 1..4 do
-      @player_input.push(@colors.sample)
+    if @turn == 0
+      for a in 1..4 do
+        @player_input.push(@colors.sample)
+      end
+    else 
+      @solutions.delete_if {|solution| create_result(solution) == create_result(@player_input)}
+      @player_input = @solutions[0]
     end
+    
   end
 
   def play
-    turns = 12
-      until turns == 0 || check_win
-        puts "there are #{turns} turns left."
+      until @turn == 12 || check_win
+        puts "there are #{12 - @turn} turns left."
         computer_guess
         puts "The computer guessed #{@player_input}, and your code is #{@game_board}"
-        create_result
+        create_result(@player_input)
         puts "The computer sees: #{@result_board}"
         sleep 0.2
-        new_turn
-        turns -= 1
+        @turn += 1
       end
       result = check_win ? "The computer won! The apocalypse is here!!" : "The computer lost! The singularity is avoided!"
       puts result
   end
+
 end
 
 puts "Welcome to Mastermind! You have two options:\nTo break the code, input '1'\nTo make the code, input'2'"
